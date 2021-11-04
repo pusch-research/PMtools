@@ -173,6 +173,7 @@ if nargout==0
             hCbar.Label.Interpreter='none';
             caxis(minmax(pVal_arr));
             if numel(pVal_arr)<10
+               hCbar.TicksMode='manual';
                hCbar.Ticks=pVal_arr; 
             end
         end
