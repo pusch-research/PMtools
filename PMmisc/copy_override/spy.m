@@ -108,7 +108,9 @@ if isempty(S), marker = 'none'; end
 plot(j,i,'marker',marker,'markersize',markersize, ...
    'linestyle',linestyle,'color',color);
 
-xlabel(['nz = ' int2str(nnz(S))]);
+xlabel('matrix columns');
+ylabel('matrix rows')
+title([int2str(size(S,1)) ' x ' int2str(size(S,2)) ' matrix with ' int2str(nnz(S)) ' non-zero elements'])
 set(gca,'xlim',[0 n+1],'ylim',[0 m+1],'ydir','reverse', ...
    'GridLineStyle','none','plotboxaspectratio',[n+1 m+1 1]);
 

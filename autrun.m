@@ -15,6 +15,10 @@ addpath(fullfile(PMtoolsWorkDir,'PMmisc','mtimesx_v1.41'));
 addpath(fullfile(PMtoolsWorkDir,'PMmisc','matlab2tikz')); 
 % addpath(fullfile(PMtoolsWorkDir,'PMmisc','xmatlabfrag')); 
 
+% add PMmodeling
+addpath(fullfile(PMtoolsWorkDir,'PMmodeling'));
+addpath(fullfile(PMtoolsWorkDir,'PMmodeling','utils'));
+
 % clean up
 clear PMtoolsWorkDir
 disp('> PMtools added..');
