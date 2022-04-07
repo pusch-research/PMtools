@@ -137,11 +137,11 @@ if nargout==0
     
     hAx=gca;
     if ~notempty(hAx.UserData,'sgrid')
-        sgrid on
-        set(findall(hAx,'Type','line'),'Color',[1 1 1]*0.6);
-        set(findall(hAx,'Type','Text'),'Color',[1 1 1]*0.6);
-        %set(findall(hAx,'Type','text'),'Color',[1 1 1]*0.3);
-        hAx.UserData.sgrid='on';
+%         sgrid on
+%         set(findall(hAx,'Type','line'),'Color',[1 1 1]*0.6);
+%         set(findall(hAx,'Type','Text'),'Color',[1 1 1]*0.6);
+%         %set(findall(hAx,'Type','text'),'Color',[1 1 1]*0.3);
+%         hAx.UserData.sgrid='on';
     end
     hold on
     

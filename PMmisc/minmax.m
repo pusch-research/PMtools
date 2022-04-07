@@ -1,5 +1,11 @@
-function mm = minmax( A )
+function [mi,ma] = minmax( A )
   Amin = min(A,[],2);
   Amax = max(A,[],2);
-  mm=[Amin Amax];
+
+  if nargout==1
+    mi=[Amin Amax];
+  elseif nargout==2
+    mi=Amin;
+    ma=Amax;
+  end
 end

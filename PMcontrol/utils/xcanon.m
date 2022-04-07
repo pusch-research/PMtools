@@ -630,7 +630,8 @@ if na<=1
 end
 
 % scale for numerical reasons
-[A,~,~,~,s,p] = xscale(A,zeros(na,0),zeros(0,na),[],[],0);
+% [A,~,~,~,s,p] = xscale(A,zeros(na,0),zeros(0,na),[],[],0); % matlab 2019 or lower
+[A,~,~,~,s] = xscale(A,zeros(na,0),zeros(0,na),[],[],0); % matlab 2021b
 
 
 % Modal form
@@ -666,7 +667,8 @@ else
 end
 
 % backscale/output
-Tm = diag(s) * Tm(p,:);
+% Tm = diag(s) * Tm(p,:); % matlab 2019 or lower
+Tm = diag(s)*Tm; %inv(Tm) ./ s';  % matlab 2021b
 Am = A;
 % 
 % 
