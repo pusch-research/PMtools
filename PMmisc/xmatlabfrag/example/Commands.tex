@@ -1,0 +1,83 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MyCommands                           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Abkürzung
+\newcommand{\eg}{e.\,g.\xspace}
+\newcommand{\Eg}{E.\,g.\xspace}
+\newcommand{\ie}{i.\,e.\xspace}
+\newcommand{\Ie}{I.\,e.\xspace}
+
+% Kennzeichnung
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+  \newcommand{\mat}[1]{\boldsymbol{#1}}
+
+% Opertatoren und Funktionen
+  \newcommand{\abs}[1]{\left| #1 \right|}
+  \newcommand{\dif}{\mathrm{d}}
+\renewcommand{\Re}{\mathrm{Re}}
+\renewcommand{\Im}{\mathrm{Im}}
+  \newcommand{\T}{^{\mathrm T}}
+  \newcommand{\f}{\mathrm{f}}
+  \newcommand{\g}{\mathrm{g}}
+  \newcommand{\h}{\mathrm{h}}
+  \newcommand{\F}{\mathrm{F}}
+  \newcommand{\besK}{\mathrm{K}}
+	\newcommand{\ftrans}[2][]{\mathcal F_{#1} \left\{ #2 \right\}}
+	\newcommand{\iftrans}[2][]{\mathcal F_{#1}^{-1} \left\{ #2 \right\}}
+	\newcommand{\ltrans}[2][]{\mathcal L_{#1} \left\{ #2 \right\}}
+	\newcommand{\iltrans}[2][]{\mathcal L_{#1}^{-1} \left\{ #2 \right\}}
+  \newcommand{\heaveside}{\Uptheta}
+
+% Konstanten
+  \newcommand{\ce}{\mathrm{e}}
+  \newcommand{\ci}{\mathrm{i}}
+  \newcommand{\cpi}{\uppi}
+
+% Physikalisch Symbole
+	\newcommand{\camline}{z_c}
+	\newcommand{\camleng}{c}
+	\newcommand{\clh}{\frac{\camleng}{2}}
+	\newcommand{\clhs}{\frac{\camleng^2}{4}}
+	\newcommand{\bcond}{w}
+  \newcommand{\Ma}{\mathit{Ma}}
+	\newcommand{\uinf}{U_\infty}
+	\newcommand{\theo}{\mathrm{C}}
+	\newcommand{\modtheo}{\hat{\theo}}
+	\newcommand{\wagn}{\Upphi}
+	\newcommand{\modwagn}{\hat \wagn}
+	\newcommand{\rLa}{\hat{s}}
+	\newcommand{\rt}{\hat{t}}
+	\newcommand{\dort}[1]{\stackrel{\scriptscriptstyle \circ}{#1}}
+	\newcommand{\ddort}[1]{\stackrel{\scriptscriptstyle \circ\circ}{#1}}
+	\newcommand{\SC}[3]{c_{#1}^{#2#3}} 
+	\newcommand{\SCfacos}{A}
+	\newcommand{\SCfsqrt}{B}
+	\newcommand{\SCfTa}{T_1(x)}
+	\newcommand{\SCfTb}{T_2(x)}
+	\newcommand{\SCfTc}{T_3(x)}
+	\newcommand{\ph}{{\left(\protect\cdot\right)}}
+
+% Für Integral Herleitungen
+\newtheoremstyle{corollary}% hnamei
+{}% hSpace abovei
+{}% hSpace belowi
+{}% hBody fonti
+{}% hIndent amounti1
+{\bfseries}% hTheorem head fonti
+{\\}% hPunctuation after theorem headi
+{.5em}% hSpace after theorem headi2
+{}% hTheorem head spec (can be left empty, meaning `normal'
+\theoremstyle{corollary} 
+\newtheorem{corollary}{Corollary}[]
+\newcommand{\corref}[1]{corollary \ref{#1}}
+
+% Units
+
+
+
+% Sonstiges
+%\newcommand{\todo}[1]{\marginline{\textcolor{red}{Todo: #1}}}
+
+
+%eof

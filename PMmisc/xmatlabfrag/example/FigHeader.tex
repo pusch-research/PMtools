@@ -1,0 +1,44 @@
+%% Header for creating MatlabFrag figures
+
+\documentclass[12pt,twoside,fleqn,openright]{scrreprt}
+
+%Komma Options
+\KOMAoptions{BCOR=10mm,DIV=12, headinclude=true, footinclude=false} %bcor=10mm
+\KOMAoptions{listof=totoc,bibliography=totoc,index=totoc}
+\recalctypearea
+
+% Packages
+%Sprache Einstellungen
+\usepackage[english, ngerman]{babel}	% Paket zum Übersetzen ins Deutsche
+\usepackage[latin1]{inputenc}			% Eingabe von Umlauten Ermöglichen
+\usepackage[T1]{fontenc} 				% use T1-encoded fonts
+
+%Komma Packages
+\usepackage[autooneside]{scrpage2}		% Paket zur Header/Footer-Definierung
+\usepackage[hyperref=false]{scrhack} 	% Damit Sprungmarken stimmen
+
+%Zusätzliche Symbole
+\usepackage{amsmath} 				   % Paket für Mathematische Formeln
+\usepackage{amssymb} 				   % Paket für Mathematische Symbols
+\usepackage{amsthm}
+\usepackage{trfsigns} 				  % Für Laplace Trafo Symbol
+\usepackage{mathcomp} 				  % Paket mit Gradzeichen
+\usepackage{dsfont}					  % Ermöglicht das schreiben von Zahlenmengen mit z.B. \mathds{R}
+\usepackage{mathrsfs}				  % Zusätzliche Schriftart
+\usepackage[thinspace, squaren, Gray] % Für Einheiten
+		{SIunits}
+\usepackage{upgreek}                  % Aurechte griechische Zeichen
+
+
+%Grafiken
+\usepackage{graphicx}				  % Paket zum Einbinden von Graphiken und Bildern, möglich [dvips]
+\usepackage{psfrag}					  % to replace text in eps-figures
+\usepackage[process=all, bitmap=auto, 
+        ps2pdf-options={}, cleanup={}]{pstool}  % Provide psfrag commands
+
+\usepackage[svgnames]{xcolor}         % for colored text and color definitions
+
+% Eigene Befehle
+\input{Commands.tex  }
+
+%% End Header

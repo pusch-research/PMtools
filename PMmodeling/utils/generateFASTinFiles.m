@@ -1,5 +1,5 @@
 % generate FAST input files
-function fstNewFileName=generateFASTinFiles(FSTtmpFileName,FSTnewModelPath,FSTnewModelSuffix,varargin)
+function [fstNewFileName,allNewFileNameArr]=generateFASTinFiles(FSTtmpFileName,FSTnewModelPath,FSTnewModelSuffix,varargin)
 
 % fst template file 
 [FSTtmpPath,FSTtmpName,FSTtmpExt]=fileparts(FSTtmpFileName);
@@ -25,6 +25,7 @@ end
 FSTnewFileData=FAST2Matlab(FSTtmpFileName);
 
 % set parameters
+allNewFileNameArr={};
 pName_arr=fieldnames(FSTparStruct);
 for ii=1:numel(pName_arr)
     
@@ -46,12 +47,18 @@ for ii=1:numel(pName_arr)
         pSubName_arr=fieldnames(pVal);
         for jj=1:numel(pSubName_arr)
             pSubName=pSubName_arr{jj};
-            subNewFileData=SetFASTPar(subNewFileData,pSubName,pVal.(pSubName));
+            if pSubName(end)=='_'
+                % replace escape character with paranthesis (see also line 41  in readFASTinFiles.m)
+                % example: transform 'BldPitch_1_' to 'BldPitch(1)'
+                pSubName(find(pSubName=='_',2,'last'))='()';
+            end
+            subNewFileData=SetFASTPar(subNewFileData,pSubName,pVal.(pSubName_arr{jj}));
         end
 
         % save sub file
         subNewFileName=fullfile(FSTnewModelPath,subNewFileName_rel);
         Matlab2FAST(subNewFileData,subTmpFileName,subNewFileName,numel(subNewFileData.HdrLines));
+        allNewFileNameArr{end+1}=subNewFileName;
 
     else
         
@@ -65,6 +72,6 @@ end
 % save fst file
 fstNewFileName=fullfile(FSTnewModelPath,[FSTtmpName FSTnewModelSuffix FSTtmpExt]);
 Matlab2FAST(FSTnewFileData,FSTtmpFileName,fstNewFileName,2); % ASSUME 2 HEADER LINES!!!!
-
+allNewFileNameArr{end+1}=fstNewFileName;
 
 

@@ -22,8 +22,9 @@ for ii=1:numel(data.Label)
        ~any(strcmpi(val_act,{'none' 'false'})) && ischar(val_act) &&...
        strcmpi(val_act(end-3:end),'.dat')
             % parse .dat subfile if exists
+            val_act=fullfile(fileparts(inFileName),val_act);
             if ~exist(val_act,'file')
-                warning('readFASTinFile:noFile',[val_act ' does not exist.']);
+                warning('readFASTinFile:noFile',[strrep(val_act,'\','\\') ' does not exist.']);
             else
                 p.(name_act)=readFASTinFiles(val_act,varargin{:});
             end

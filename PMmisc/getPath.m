@@ -9,7 +9,7 @@
 %      3) plattform: UNIX, WINDOWS or MAC
 %      where only case insensitive word characters are considered (non-
 %      exact matching). If no OPT is given, the fields of S are searched
-%      recursively in the given order recursively.
+%      in the given order recursively.
 %   
 %   Example: getPath(struct('PUSC_MA',struct('win','C:\tmp')))
 %       

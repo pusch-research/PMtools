@@ -1,12 +1,7 @@
-function model=buildSimpleModel(CpCtCq,RatedGenPwr,rho,R,GBratio,Jrot,WndSpeed)
+function model=buildSimpleModel(CpCtCq_fileName,rGenPwr_kW,rho,R,GBratio,Jrot,WndSpeed)
+% NOTE: rGenPwr_kW is in [kW]
 
 % input handling
-if isstruct(CpCtCq)
-    c=CpCtCq;
-else
-    error('CpCtCq file parser not implemented.')
-end
-
 if ~exist("WndSpeed",'var')
     WndSpeed=0:0.25:25;
 elseif iscell(WndSpeed)
@@ -14,21 +9,30 @@ elseif iscell(WndSpeed)
 end
 
 
+%% load CpCtCq surfaces
+
+% load coefficient surfaces (Cp,Ct,Cq)
+CpCtCq=readPerfSurface(CpCtCq_fileName);
+
+
 %% compute values from cp surface
 
+% re-assign for easier access
+c=CpCtCq;
+
 % Compute gradients of Cp surface for later calculations
-[dCp_pitch_tbl, dCp_TSR_tbl] = gradient(c.Cp,c.BldPitch,c.RtTSR);
-[dCt_pitch_tbl, dCt_TSR_tbl] = gradient(c.Ct,c.BldPitch,c.RtTSR);
+[dCp_pitch_tbl, dCp_TSR_tbl] = gradient(c.Cp,c.BldPitch,c.TSR);
+[dCt_pitch_tbl, dCt_TSR_tbl] = gradient(c.Ct,c.BldPitch,c.TSR);
 
 % define interpolation function
-fCp=@(BldPitch_deg,TSR)  interp2(c.BldPitch, c.RtTSR, c.Cp, BldPitch_deg, TSR,'spline');
-fCt=@(BldPitch_deg,TSR)  interp2(c.BldPitch, c.RtTSR, c.Ct, beta_deg, TSR,'spline');
+fCp=@(BldPitch_deg,TSR)  interp2(c.BldPitch, c.TSR, c.Cp, BldPitch_deg, TSR,'spline');
+fCt=@(BldPitch_deg,TSR)  interp2(c.BldPitch, c.TSR, c.Ct, beta_deg, TSR,'spline');
 
 
 % find grid point with optimal Cp as an initial value
 [i_tsrOpt, i_pitchOpt] = find(c.Cp == max(c.Cp, [], 'all'), 1); % note indices are reversed from 3d plotting functions like surf
 BldPitch_opt_deg = c.BldPitch(i_pitchOpt);
-TSR_opt = c.RtTSR(i_tsrOpt);
+TSR_opt = c.TSR(i_tsrOpt);
 
 
 % find optimal cp using optimization
@@ -38,54 +42,58 @@ BldPitch_opt_deg=x_opt(1);
 TSR_opt=x_opt(2);
 
 % get rated values
-v_rated_mDs=(2*RatedGenPwr/(rho*R^2*pi*Cp_opt))^(1/3);
+v_rated_mDs=(2*rGenPwr_kW*1e3/(rho*R^2*pi*Cp_opt))^(1/3);
 wr_rated_radDs=TSR_opt*v_rated_mDs/R;
 wg_rated_radDs=wr_rated_radDs*GBratio;
-tau_rated_Nm=RatedGenPwr/wg_rated_radDs;
+GenTq_rated_Nm=rGenPwr_kW*1e3/wg_rated_radDs;
 
 
 %% generate data arrays
 
-v_mDs_arr=[v_rated_mDs ceil(v_rated_mDs):0.25:25]'; 
-% v_mDs_arr=[ceil(v_rated_mDs):0.25:25]'; 
-TSR_arr=wr_rated_radDs.*R./v_mDs_arr;
-TSR_upper_arr=wr_rated_radDs.*R./v_mDs_arr*1.2;
-TSR_lower_arr=wr_rated_radDs.*R./v_mDs_arr/1.2;
+v_mDs_arr=unique([v_rated_mDs*0.999 v_rated_mDs WndSpeed(:)']); 
+n_v=numel(v_mDs_arr);  % number of wind speeds
+n_vBR=find(v_mDs_arr==v_rated_mDs*0.999); % below rated wind speeds 
+n_vAR=n_v-n_vBR; % above rated wind speeds
+
+TSR_arr=[repmat(TSR_opt,1,n_vBR) wr_rated_radDs.*R./v_mDs_arr(n_vBR+1:end)];
+TSR_upper_arr=wr_rated_radDs.*R./v_mDs_arr*1.2; % 20% above rated rotor speed [1 x n_vAR]
+TSR_lower_arr=wr_rated_radDs.*R./v_mDs_arr/1.2; % 20% below rated rotor speed [1 x n_vAR]
 Cp_arr = Cp_opt * (TSR_arr ./ TSR_opt).^3;
 Cp_upper_arr = Cp_opt * (TSR_upper_arr ./ TSR_opt).^3;
 Cp_lower_arr = Cp_opt * (TSR_lower_arr ./ TSR_opt).^3;
 wr_radDs_arr=TSR_arr.*v_mDs_arr./R;
 
 % compute analytical model at each op point
-n_v=numel(v_mDs_arr);
-BldPitch_deg_arr = zeros(n_v,1);
-BldPitch_upper_deg_arr = zeros(n_v,1);
-BldPitch_lower_deg_arr = zeros(n_v,1);
-dCp_dbeta_arr = zeros(n_v,1);
-dCp_dTSR_arr = zeros(n_v,1);
-dCt_dbeta_arr = zeros(n_v,1);
-dCt_dTSR_arr = zeros(n_v,1);
-Ct_arr = zeros(n_v,1);
+BldPitch_deg_arr = repmat(BldPitch_opt_deg,1,n_v);
+BldPitch_upper_deg_arr = zeros(1,n_v);
+BldPitch_lower_deg_arr = zeros(1,n_v);
+dCp_dbeta_arr = zeros(1,n_v);
+dCp_dTSR_arr = zeros(1,n_v);
+dCt_dbeta_arr = zeros(1,n_v);
+dCt_dTSR_arr = zeros(1,n_v);
+Ct_arr = zeros(1,n_v);
+GenTq_Nm_arr=[1/2*rho*pi*R^3*Cp_opt*v_mDs_arr(1:n_vBR).^2/TSR_opt/GBratio ...
+              repmat(GenTq_rated_Nm,1,n_vAR)];
 
 % above rated
-for i_v = 1:n_v
+for i_v = n_vBR+1:n_v
 
     % compute blade pitch angle of maximum Cp at given TSR
     BldPitch_opt_act=fminsearch(@(x) -fCp(x,TSR_arr(i_v)),BldPitch_opt_deg);
 
-    % find the UPPER blade pitch angle which matches the given Cp value
+    % find blade pitch angle which matches the given Cp value
     BldPitch_deg_arr(i_v)=fminbnd(@(x) abs(fCp(x,TSR_arr(i_v))-Cp_arr(i_v)),BldPitch_opt_act,max(c.BldPitch)); 
-    BldPitch_upper_deg_arr(i_v)=fminbnd(@(x) abs(fCp(x,TSR_upper_arr(i_v))-Cp_arr(i_v)),BldPitch_opt_act,max(c.BldPitch)); 
-    BldPitch_lower_deg_arr(i_v)=fminbnd(@(x) abs(fCp(x,TSR_lower_arr(i_v))-Cp_arr(i_v)),BldPitch_opt_act,max(c.BldPitch)); 
+    BldPitch_upper_deg_arr(i_v-n_vBR)=fminbnd(@(x) abs(fCp(x,TSR_upper_arr(i_v-n_vBR))-Cp_arr(i_v)),BldPitch_opt_act,max(c.BldPitch)); 
+    BldPitch_lower_deg_arr(i_v-n_vBR)=fminbnd(@(x) abs(fCp(x,TSR_lower_arr(i_v-n_vBR))-Cp_arr(i_v)),BldPitch_opt_act,max(c.BldPitch)); 
 
     % compute gradients at current operation point
-    dCp_dbeta_arr(i_v) = interp2(c.BldPitch, c.RtTSR, dCp_pitch_tbl, BldPitch_deg_arr(i_v), TSR_arr(i_v));
-    dCp_dTSR_arr(i_v) = interp2(c.BldPitch, c.RtTSR, dCp_TSR_tbl, BldPitch_deg_arr(i_v), TSR_arr(i_v));
-    dCt_dbeta_arr(i_v) = interp2(c.BldPitch, c.RtTSR, dCt_pitch_tbl, BldPitch_deg_arr(i_v), TSR_arr(i_v));
-    dCt_dTSR_arr(i_v) = interp2(c.BldPitch, c.RtTSR, dCt_TSR_tbl, BldPitch_deg_arr(i_v), TSR_arr(i_v));
+    dCp_dbeta_arr(i_v) = interp2(c.BldPitch, c.TSR, dCp_pitch_tbl, BldPitch_deg_arr(i_v), TSR_arr(i_v));
+    dCp_dTSR_arr(i_v) = interp2(c.BldPitch, c.TSR, dCp_TSR_tbl, BldPitch_deg_arr(i_v), TSR_arr(i_v));
+    dCt_dbeta_arr(i_v) = interp2(c.BldPitch, c.TSR, dCt_pitch_tbl, BldPitch_deg_arr(i_v), TSR_arr(i_v));
+    dCt_dTSR_arr(i_v) = interp2(c.BldPitch, c.TSR, dCt_TSR_tbl, BldPitch_deg_arr(i_v), TSR_arr(i_v));
 
     % Ct value at current operation point
-    Ct_arr(i_v) = interp2(c.BldPitch, c.RtTSR, c.Ct, BldPitch_deg_arr(i_v), TSR_arr(i_v));
+    Ct_arr(i_v) = interp2(c.BldPitch, c.TSR, c.Ct, BldPitch_deg_arr(i_v), TSR_arr(i_v));
 
 end
 
@@ -115,6 +123,6 @@ B_v = dtau_dv/Jrot;               % input matrix for wind speed
 
 
 %% return
-clear BldPitch_opt_act  % clear variables before saving them
+clear BldPitch_opt_act c WndSpeed  % clear variables before saving them
 model=ws2struct();
 
