@@ -2,3 +2,5 @@
 *.asv
 *.ffs_db
 parfor_progress.txt
+/PMmodeling/utils/*.autosave
+/PMmodeling/utils/*.original

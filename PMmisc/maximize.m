@@ -40,5 +40,6 @@ set(figure_handle,'Position',[left bottom w h]);
 drawnow;
 %pause(0.01);
 warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+warning('off','MATLAB:ui:javaframe:PropertyToBeRemoved');
 jFrame = get(handle(gcf),'JavaFrame');
 jFrame.setMaximized(true);   % to maximize the figure
