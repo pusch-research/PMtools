@@ -1,4 +1,4 @@
-function y=filterSignal(u,wc,type,order)
+function y=filterSignal(u,wc,type,order,t)
 % filter a signal using Butterworth filter
 
 
