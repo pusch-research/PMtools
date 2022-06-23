@@ -65,12 +65,12 @@ function stop()
     clear mex % to avoid total crash which happens sometimes
     w=warning('query','MATLAB:DELETE:FileNotFound');
     warning('off','MATLAB:DELETE:FileNotFound')
-    delete([FASTinputFile(1:end-4) '.SFunc.SD.ech']) 
-    delete([FASTinputFile(1:end-4) '.SFunc.SD.sum']) 
-    delete([FASTinputFile(1:end-4) '.SFunc.ED.sum']) 
-    delete([FASTinputFile(1:end-4) '.SFunc.outb'])
-    delete([FASTinputFile(1:end-4) '.SFunc.out'])
-    delete([FASTinputFile(1:end-4) '.SFunc.SrvD.Sum'])
+%     delete([FASTinputFile(1:end-4) '.SFunc.SD.ech']) 
+%     delete([FASTinputFile(1:end-4) '.SFunc.SD.sum']) 
+%     delete([FASTinputFile(1:end-4) '.SFunc.ED.sum']) 
+%     delete([FASTinputFile(1:end-4) '.SFunc.outb'])
+%     delete([FASTinputFile(1:end-4) '.SFunc.out'])
+%     delete([FASTinputFile(1:end-4) '.SFunc.SrvD.Sum'])
     warning(w.state,'MATLAB:DELETE:FileNotFound')
 
 end
