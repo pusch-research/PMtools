@@ -38,37 +38,42 @@ simo_sys   = ssbal(sminreal(simo_sys)); % scale system for numerical stability
 
 % try to compute gramian with different algorithms
 Q=[];
-if isempty(Q)
-    try
-        R = lyapchol(A,B,[],'noscale'); 
-        Q = R'*R;
-    catch
-    end
-end
-if isempty(Q)
-    try
-        R = lyapchol(A,B,[],'noscale'); 
-        Q = R'*R;
-    catch
-    end
-end
-if isempty(Q)
-    try
-        Q = lyap(A,B*B'); 
-    catch
-    end
-end
-
-
-if isempty(Q)
-    % gramian could not be computed
-    norm_arr=inf(size(simo_sys,1),1); 
+if all(B==0)
+    Q=zeros(size(A));
 else
-    for i_out=size(simo_sys,1):-1:1
-        norm_arr(i_out,1) = sqrt(trace(C(i_out,:)*Q*C(i_out,:)')) ; % OLD: norm(R*C(i_out,:).')
+    if isempty(Q)
+        try
+            R = lyapchol(A,B,[],'noscale'); 
+            Q = R'*R;
+        catch
+        end
     end
-    norm_arr(D~=0)=inf; % non-zero D leads to inf H2-norm
+    if isempty(Q)
+        try
+            R = lyapchol(A,B,[],'noscale'); 
+            Q = R'*R;
+        catch
+        end
+    end
+    if isempty(Q)
+        try
+            Q = lyap(A,B*B'); 
+        catch
+        end
+    end
+    if isempty(Q)
+        % gramian could not be computed
+        norm_arr=inf(size(simo_sys,1),1); 
+        return
+    end
 end
+
+
+for i_out=size(simo_sys,1):-1:1
+    norm_arr(i_out,1) = sqrt(trace(C(i_out,:)*Q*C(i_out,:)')) ; % OLD: norm(R*C(i_out,:).')
+end
+norm_arr(D~=0)=inf; % non-zero D leads to inf H2-norm
+
     
 
 %% IMPORTANT: SYSTEM SHOULD BE A BALANCED FORM. USE BALREAL to REDUCE NUMERICAL ERRORS!
