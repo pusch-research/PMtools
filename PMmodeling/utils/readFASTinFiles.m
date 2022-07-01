@@ -6,11 +6,11 @@ function p=readFASTinFiles(inFileName,varargin)
 % read fst file data
 data=FAST2Matlab(inFileName,varargin{:});
 
-% convert to struct
+% convert to struct - LABEL/VAL
 p=struct();
 for ii=1:numel(data.Label)
 
-    name_act=data.Label{ii};
+    name_act=strrep(strrep(data.Label{ii},'(','_'),')','_');    % repace parenthesis by underscore 
     val_act=data.Val{ii};
     if ischar(val_act)
         % eliminate " and '
@@ -18,29 +18,39 @@ for ii=1:numel(data.Label)
         val_act=strrep(val_act,'"','');
     end
 
-    if (strcmp(name_act(max(1,end-3):end),'File') || strcmp(name_act(max(1,end-4):end-1),'File')) && ...
+    if (strcmp(name_act(max(1,end-3):end),'File') || ...      % e.g. EDFile
+        strcmp(name_act(max(1,end-4):end-1),'File') || ...    %
+        strcmp(name_act(max(1,end-6):end-3),'File') ) && ...  % e.g. BldFile(1)
        ~any(strcmpi(val_act,{'none' 'false'})) && ischar(val_act) &&...
        strcmpi(val_act(end-3:end),'.dat')
             % parse .dat subfile if exists
             val_act=fullfile(fileparts(inFileName),val_act);
             if ~exist(val_act,'file')
                 warning('readFASTinFile:noFile',[strrep(val_act,'\','\\') ' does not exist.']);
+            elseif strcmp(name_act,'SubFile')
+                warning('readFASTinFile:notSupported','Parsing SubDyn files is not supported.');
             else
                 p.(name_act)=readFASTinFiles(val_act,varargin{:});
             end
-
-%     elseif strcmp(name_act(end),')')
-%         % parse array (assume single digit index!)
-%         if ischar(val_act)
-%             p.(name_act(1:end-3)){str2double(name_act(end-1))}=val_act;
-%         else
-%             p.(name_act(1:end-3))(str2double(name_act(end-1)))=val_act;
-%         end
     else
         % regular entry
-        name_act=strrep(strrep(name_act,'(','_'),')','_'); % repace parenthesis by underscore 
         p.(name_act)=val_act;
     end
 end
 
+% copy additional porperties (like tables, outlist, etc.)
+% TODO: add identifier so its clear that this is and additonal property (for writing FST files)
+name_arr=fieldnames(data);
+for name_act=setdiff(name_arr,{'HdrLines' 'Label' 'Val'})'
+    if isfield(data.(name_act{:}),'Table')
+        % convert columns of table to sturct fields (and ignore comments)
+        headerName_arr=data.(name_act{:}).Headers;
+        for ii=1:numel(headerName_arr)
+            p.(name_act{:}).(headerName_arr{ii})=data.(name_act{:}).Table(:,ii);
+        end
+    else
+        % additional property is not a table
+        p.(name_act{:})=data.(name_act{:});
+    end
+end
 

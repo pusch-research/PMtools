@@ -1,10 +1,13 @@
-function [OutList,DT]=getFASTparamFromSL(FASTinputFile,SLmodelWithFASTsfunction)
+function [OutList,DT]=getFASTparamFromSL(FASTinputFile,SLmodelWithFASTsfunction,delTmpFiles)
 
 % this is a hack to obtain OutList and DT of a FAST model which is
 % implemented as a s-function in Simulink
 
-if nargin<=1
+if nargin<=1 || isempty(SLmodelWithFASTsfunction)
     SLmodelWithFASTsfunction='model_FASTsfunctionOnly';
+end
+if nargin<=2
+    delTmpFiles=true;
 end
 
 
@@ -29,12 +32,12 @@ end
 try
     clear mex % to avoid total crash which happens sometimes
     evalc([SLmodelWithFASTsfunction '([],[],[],''sizes'')']);
-    stop()
+    stop(delTmpFiles)
 catch ex
     if strcmp(ex.identifier,'Simulink:SFunctions:SFcnParamCountErr')
         error('FAST sfunction is currently running. Stop other simulations first.')
     end
-    stop()
+    stop(delTmpFiles)
     rethrow(ex)
 end
 % catch
@@ -61,17 +64,19 @@ else
 end
 
 
-function stop()
+function stop(delTmpFiles)
     clear mex % to avoid total crash which happens sometimes
-    w=warning('query','MATLAB:DELETE:FileNotFound');
-    warning('off','MATLAB:DELETE:FileNotFound')
-%     delete([FASTinputFile(1:end-4) '.SFunc.SD.ech']) 
-%     delete([FASTinputFile(1:end-4) '.SFunc.SD.sum']) 
-%     delete([FASTinputFile(1:end-4) '.SFunc.ED.sum']) 
-%     delete([FASTinputFile(1:end-4) '.SFunc.outb'])
-%     delete([FASTinputFile(1:end-4) '.SFunc.out'])
-%     delete([FASTinputFile(1:end-4) '.SFunc.SrvD.Sum'])
-    warning(w.state,'MATLAB:DELETE:FileNotFound')
+    if delTmpFiles
+        w=warning('query','MATLAB:DELETE:FileNotFound');
+        warning('off','MATLAB:DELETE:FileNotFound')
+        delete([FASTinputFile(1:end-4) '.SFunc.SD.ech']) 
+        delete([FASTinputFile(1:end-4) '.SFunc.SD.sum']) 
+        delete([FASTinputFile(1:end-4) '.SFunc.ED.sum']) 
+        delete([FASTinputFile(1:end-4) '.SFunc.outb'])
+        delete([FASTinputFile(1:end-4) '.SFunc.out'])
+        delete([FASTinputFile(1:end-4) '.SFunc.SrvD.Sum'])
+        warning(w.state,'MATLAB:DELETE:FileNotFound')
+    end
 
 end
 end
