@@ -74,7 +74,7 @@ print(filePath,fileType,printOpt{:});
 
 % display
 if enableDisp
-    disp(['> figure <a href="matlab: winopen(''' filePath ''')">' fileName '</a>' ' saved ..']);
+    disp(['> figure <a href="matlab: winopen(''' filePath ''')">' fileName '.' fileType(3:end) '</a>' ' saved ..']);
 end
 
 % open file

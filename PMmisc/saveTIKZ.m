@@ -144,7 +144,7 @@ end
 
 % display
 if enableDisp
-    disp(['> figure <a href="matlab: winopen(''' filePath ''')">' fileName '</a>' ' saved ..']);
+    disp(['> figure <a href="matlab: winopen(''' filePath ''')">' fileName '.' fileType '</a>' ' saved ..']);
 end
 
 % open file

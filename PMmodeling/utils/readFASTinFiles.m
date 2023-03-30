@@ -22,13 +22,19 @@ for ii=1:numel(data.Label)
         strcmp(name_act(max(1,end-4):end-1),'File') || ...    %
         strcmp(name_act(max(1,end-6):end-3),'File') ) && ...  % e.g. BldFile(1)
        ~any(strcmpi(val_act,{'none' 'false'})) && ischar(val_act) &&...
-       strcmpi(val_act(end-3:end),'.dat')
+       strcmpi(val_act(max(end-3,1):end),'.dat')
             % parse .dat subfile if exists
             val_act=fullfile(fileparts(inFileName),val_act);
             if ~exist(val_act,'file')
                 warning('readFASTinFile:noFile',[strrep(val_act,'\','\\') ' does not exist.']);
             elseif strcmp(name_act,'SubFile')
                 warning('readFASTinFile:notSupported','Parsing SubDyn files is not supported.');
+            elseif strcmp(name_act,'DLL_InFile')
+                warning('readFASTinFile:notSupported','Parsing DLL_InFile is not supported.'); % e.g. ROSCO
+            elseif strcmp(name_act,'HydroFile')
+                warning('readFASTinFile:notSupported','Parsing HydroDyn files is not supported.'); 
+            elseif strcmp(name_act,'MooringFile')
+                warning('readFASTinFile:notSupported','Parsing MooreDyn files is not supported.'); 
             else
                 p.(name_act)=readFASTinFiles(val_act,varargin{:});
             end

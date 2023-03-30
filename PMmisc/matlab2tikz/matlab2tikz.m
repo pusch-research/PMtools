@@ -3067,7 +3067,9 @@ function m2t = drawAnnotationsHelper(m2t,h)
             % Rectangle
         case {'scribe.scriberect', 'matlab.graphics.shape.Rectangle'}
             [m2t, str] = drawRectangle(m2t, h);
-
+        case {'matlab.graphics.shape.internal.Button' 'matlab.ui.controls.ToolbarPushButton' 'matlab.ui.controls.ToolbarDropdown' 'matlab.ui.controls.ToolbarStateButton' }
+            % ignore
+            return
         otherwise
             userWarning(m2t, 'Don''t know annotation ''%s''.', cl);
             return

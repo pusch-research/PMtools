@@ -4,6 +4,10 @@
 %   SAVELATEXPDF(..)
 %   FILEPATH=SAVELATEXPDF(..) with options see below
 %   
+%   Notes: set xtickangle(0) to suppress auto-rotate of xticklables
+%          set colorbar interpreter to LaTex to avoid weird font change
+%          set AxPos(end-1)=AxPos(end-1)*0.9 to make sure colorbar label is not outside of exported figure
+%
 %   Example: saveLATEXPDF()
 %       
 %   See also SAVEPNG, XMF_EXPORT
@@ -123,7 +127,7 @@ xmf_export(filePath,'output', fileType,matlabfragOpt{:})
 
 % display
 if enableDisp
-    disp(['> figure <a href="matlab: winopen(''' filePath ''')">' fileName '</a>' ' saved ..']);
+    disp(['> figure <a href="matlab: winopen(''' filePath ''')">' fileName '.' fileType '</a>' ' saved ..']);
 end
 
 % open file
