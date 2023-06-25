@@ -1,7 +1,7 @@
-function plotSimpleModel(simpleModel)
+function plotModelBEM(modelBEM)
 
 
-struct2ws(simpleModel);
+struct2ws(modelBEM);
 
 
 
@@ -35,6 +35,21 @@ grid on
 garyfyFigure
 set(gcf,'Position',[680  730  301  248])
 
+
+
+%% plot cq surface 1
+figure('name','cq surface','numbertitle','off')
+contourf(CpCtCq.BldPitch, CpCtCq.TSR, CpCtCq.Cq,15);
+hold on;
+plot(BldPitch_opt_deg, TSR_opt, 'rx'); % Max point
+plot(BldPitch_deg_arr,TSR_arr,'r-','LineWidth',3)
+xlabel('blade pitch [deg]');
+ylabel('tip speed ratio [-]');
+title('cq surface')
+xlim([min(CpCtCq.BldPitch) max(BldPitch_deg_arr)])
+grid on
+garyfyFigure
+set(gcf,'Position',[680  730  301  248])
 
 
 %% pitch schedule
