@@ -1,4 +1,4 @@
-function model=buildBEMmodel(CpCtCq_fileName,rGenPwr_kW,rho,R,GBratio,Jrot,WndSpeed)
+function model=buildModelBEM(CpCtCq_fileName,rGenPwr_kW,rho,R,GBratio,Jrot,WndSpeed)
 % NOTE: rGenPwr_kW is in [kW]
 
 % input handling
