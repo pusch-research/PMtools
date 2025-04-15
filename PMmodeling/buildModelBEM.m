@@ -1,4 +1,4 @@
-function model=buildBEMmodel(CpCtCq_fileName,rGenPwr_kW,rho,R,GBratio,Jrot,WndSpeed)
+function model=buildModelBEM(CpCtCq_fileName,rGenPwr_kW,rho,R,GBratio,Jrot,WndSpeed)
 % NOTE: rGenPwr_kW is in [kW]
 
 % input handling
@@ -26,7 +26,7 @@ c=CpCtCq;
 
 % define interpolation function
 fCp=@(BldPitch_deg,TSR)  interp2(c.BldPitch, c.TSR, c.Cp, BldPitch_deg, TSR,'spline');
-fCt=@(BldPitch_deg,TSR)  interp2(c.BldPitch, c.TSR, c.Ct, beta_deg, TSR,'spline');
+fCt=@(BldPitch_deg,TSR)  interp2(c.BldPitch, c.TSR, c.Ct, BldPitch_deg, TSR,'spline');
 
 
 % find grid point with optimal Cp as an initial value
@@ -40,12 +40,14 @@ TSR_opt = c.TSR(i_tsrOpt);
 Cp_opt=-Cp_opt;
 BldPitch_opt_deg=x_opt(1);
 TSR_opt=x_opt(2);
+Ct_opt=fCt(BldPitch_opt_deg,TSR_opt);
 
 % get rated values
 v_rated_mDs=(2*rGenPwr_kW*1e3/(rho*R^2*pi*Cp_opt))^(1/3);
 wr_rated_radDs=TSR_opt*v_rated_mDs/R;
 wg_rated_radDs=wr_rated_radDs*GBratio;
 GenTq_rated_Nm=rGenPwr_kW*1e3/wg_rated_radDs;
+RotThrust_rated_N=1/2*rho*pi*R^2*Ct_opt*v_rated_mDs^2;
 
 
 %% generate data arrays
@@ -71,9 +73,11 @@ dCp_dbeta_arr = zeros(1,n_v);
 dCp_dTSR_arr = zeros(1,n_v);
 dCt_dbeta_arr = zeros(1,n_v);
 dCt_dTSR_arr = zeros(1,n_v);
-Ct_arr = zeros(1,n_v);
+Ct_arr = repmat(Ct_opt,1,n_v);
 GenTq_Nm_arr=[1/2*rho*pi*R^3*Cp_opt*v_mDs_arr(1:n_vBR).^2/TSR_opt/GBratio ...
               repmat(GenTq_rated_Nm,1,n_vAR)];
+
+
 
 % above rated
 for i_v = n_vBR+1:n_v
@@ -93,17 +97,24 @@ for i_v = n_vBR+1:n_v
     dCt_dTSR_arr(i_v) = interp2(c.BldPitch, c.TSR, dCt_TSR_tbl, BldPitch_deg_arr(i_v), TSR_arr(i_v));
 
     % Ct value at current operation point
-    Ct_arr(i_v) = interp2(c.BldPitch, c.TSR, c.Ct, BldPitch_deg_arr(i_v), TSR_arr(i_v));
+    Ct_arr(i_v) = fCt(BldPitch_deg_arr(i_v), TSR_arr(i_v));
 
 end
+RotThrust_N_arr=1/2*rho*pi*R^2*Ct_arr.*v_mDs_arr.^2;
+GenPwr_W_arr=1/2*rho*pi*R^2*Cp_arr.*v_mDs_arr.^3;
 
 % linearized system derivatives
 dtau_dbeta      = 1 / 2 * rho * R^3 * pi .* v_mDs_arr.^2 ./ TSR_arr .* dCp_dbeta_arr ;
 dtau_dlambda    = 1 / 2 * rho * R^3 * pi .* v_mDs_arr.^2 ./ TSR_arr.^2 .* (dCp_dTSR_arr.*TSR_arr - Cp_arr);
-dlambda_dwg  = R ./ v_mDs_arr / GBratio;
+dlambda_dwg     = R ./ v_mDs_arr / GBratio;
 dtau_domega     = dtau_dlambda .* dlambda_dwg;
-dTSR_dv      = -TSR_arr./v_mDs_arr;
-dtau_dv = (1 / 2 * rho * R^2*pi ./ wr_radDs_arr) .* (dCp_dTSR_arr .* dTSR_dv .* v_mDs_arr.^3 + Cp_arr* 3 .* v_mDs_arr.^2);
+dlambda_dv      = -TSR_arr./v_mDs_arr;
+dtau_dv         = (1 / 2 * rho * R^2*pi ./ wr_radDs_arr) .* (dCp_dTSR_arr .* dlambda_dv .* v_mDs_arr.^3 + Cp_arr* 3 .* v_mDs_arr.^2);
+dCt_dv          = dCt_dTSR_arr .* dlambda_dv;
+dT_dv           = 1/2 * rho * R^2*pi * ( 2 * v_mDs_arr .* Ct_arr + v_mDs_arr.^2 .* dCt_dv );
+dT_dbeta        = 1/2 * rho * R^2*pi * v_mDs_arr.^2 .* dCt_dbeta_arr;
+dT_dwg          = 1/2 * rho * R^2*pi * v_mDs_arr.^2 .* dCt_dTSR_arr .* dlambda_dwg;
+
 
 % % These are partial derivatives of thrust force
 % Pi_beta         = 1/2 * rho * Ar * v_op.^2 .* dCt_dbeta;
@@ -113,14 +124,29 @@ dtau_dv = (1 / 2 * rho * R^2*pi ./ wr_radDs_arr) .* (dCp_dTSR_arr .* dTSR_dv .* 
 
 
 
-%% LTI state space matrices
-A = GBratio*dtau_domega/Jrot;             % system matrix
+%% LTI state space syste
+A = GBratio*dtau_domega/Jrot;             % system matrix (state is generator speed)
 B_tau = -GBratio^2/Jrot;                  % input matrix for generator torque  
 B_beta = GBratio*dtau_dbeta/Jrot;         % input matrix for blade pitch
-B_v = dtau_dv/Jrot;               % input matrix for wind speed 
+B_v = dtau_dv/Jrot;                       % input matrix for wind speed 
 
 
 
+clear sys
+for i_v=n_v:-1:1
+    sys(:,:,i_v)=ss(    A(i_v),...
+                        [B_v(i_v) B_beta(i_v)],...
+                        [1 ; dT_dwg(i_v)],...
+                        [0 0 ; dT_dv(i_v) dT_dbeta(i_v)] );
+end
+
+sys.StateName={'wg'};
+sys.StateUnit='rad/s';
+sys.InputName={'v' 'beta'};
+sys.InputUnit={'m/s' 'deg'};
+sys.OutputName={'wg' 'T'};
+sys.OutputUnit={'rad/s' 'N'};
+sys.SamplingGrid.v=v_mDs_arr;
 
 %% return
 clear BldPitch_opt_act c WndSpeed  % clear variables before saving them

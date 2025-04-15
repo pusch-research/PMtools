@@ -12,8 +12,15 @@
 %       
 %   See also PADE
 
+% REVISIONS:    2012 implementation (AK)
+%               2014-05-16 add order N (MP)
+% 
+% Contact       manuel.pusch@dlr.de
+% Copyright (C) 2014 DLR Robotics and Mechatronics              __/|__
+%                                                              /_/_/_/
+%                                                                |/ DLR
 
-function varargout = xpade(Td,N)
+function varargout = xPade(Td,N)
 
 %% Input chek
 if isempty(Td)

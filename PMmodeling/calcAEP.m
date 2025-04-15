@@ -1,4 +1,4 @@
-function AEP=calcAEP(GenPwr,WindSpeed,a,b)
+function [AEP,binProbs]=calcAEP(GenPwr,WindSpeed,a,b)
 
 if ~exist('a','var')
     a=11.29; % default scale parameter for Weibull distribution
@@ -14,7 +14,7 @@ switch calcOpt
     case 2
         tmpWindSpeed=[WindSpeed(1) WindSpeed(:)']+[0 diff(WindSpeed(:)')/2 0];
         binProbs=wblcdf(tmpWindSpeed(2:end),a,b)-wblcdf(tmpWindSpeed(1:end-1),a,b);
-        AEP = binProbs*GenPwr(:)*8765.81278/1e6; % in GWh/yr\
+        AEP = binProbs*GenPwr(:)*8765.81278/1e6; % in GWh/yr
     otherwise 
         error('not implemented.')
 end
